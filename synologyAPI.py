@@ -1,9 +1,13 @@
 ####################
 # IMPORTS
 
+# Synology API
 from synology_api import core_sys_info, surveillancestation
+# Python API / JSON creator | #UNUSED
 from flask import Flask, jsonify
+# PPrint | #UNUSED
 import pprint
+# JSON creator | #USUSED
 import json
 
 
