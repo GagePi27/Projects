@@ -51,7 +51,7 @@ apiCall_2 = surveillancestation.SurveillanceStation(nasIp, nasPort, username, pa
 # DATA MANAGEMENT / ORGANIZATION
 
 # Edit Default JSON function
-def insert_data(default_data, active, inactive, cpu, memory, storage, ups):
+def insert_data(default_data, cpu, memory, storage, ups, active, inactive):
     new_data = default_data
     
     new_data["camera_info"]["active"] = active
@@ -63,21 +63,7 @@ def insert_data(default_data, active, inactive, cpu, memory, storage, ups):
         new_data["system_info"]["ups_percentage"] = f"{ups}%"
 
     return new_data
-
-# Camera Activity Function
-def camera_activity(camera_info):
-    active = 0
-    inactive = 0
     
-    if 'cameras' in camera_info.get('data', {}):
-        for camera in camera_info['data']['cameras']:
-            # Check the camera's 'status' key
-            if camera.get('status') == 1:
-                active += 1
-            else:
-                inactive += 1
-
-    return [active, inactive]
 
 # Volume Availability Function
 def volume_availability(storage_info):
@@ -95,6 +81,21 @@ def volume_availability(storage_info):
 #def ups_activity(ups_info):
 
 
+# Camera Activity Function
+def camera_activity(camera_info):
+    active = 0
+    inactive = 0
+    
+    if 'cameras' in camera_info.get('data', {}):
+        for camera in camera_info['data']['cameras']:
+            # Check the camera's 'status' key
+            if camera.get('status') == 1:
+                active += 1
+            else:
+                inactive += 1
+
+    return [active, inactive]
+
 
 ####################
 # API PULLS
@@ -103,14 +104,14 @@ def volume_availability(storage_info):
 cpu_usage = (apiCall_1.get_cpu_utilization()['5min_load'])
 # Memory Usage (%)
 memory_usage = (apiCall_1.get_memory_utilization()['real_usage'])
-# Active Camera Count
-camera_active = (camera_activity(apiCall_2.camera_list())[0])
-# Inactive Camera Count
-camera_inactive = (camera_activity(apiCall_2.camera_list())[1])
 # Available Storage (TB)
 storage_available = (volume_availability(apiCall_1.get_volume_info()))
 # UPS Power (%)
 ups = 100
+# Active Camera Count
+camera_active = (camera_activity(apiCall_2.camera_list())[0])
+# Inactive Camera Count
+camera_inactive = (camera_activity(apiCall_2.camera_list())[1])
 
 
 
@@ -118,7 +119,7 @@ ups = 100
 # UPDATE JSON
 
 # Print Updated JSON | #FOR TEST PURPOSES
-print(insert_data(default_data, camera_active, camera_inactive, cpu_usage, memory_usage, storage_available, ups))
+print(insert_data(default_data, cpu_usage, memory_usage, storage_available, ups, camera_active, camera_inactive))
 
 
 
