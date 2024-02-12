@@ -26,8 +26,8 @@ default_data = {
 
 nasIp = '192.168.1.140'
 nasPort = '5001'
-username = 'remote_stats'
-password = '9Z8mpRzW'
+username = 'username'
+password = 'password'
 
 
 
