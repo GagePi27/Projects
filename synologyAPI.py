@@ -79,8 +79,7 @@ def volume_availability(storage_info):
     available_size = int(total_size) - int(used_size)
     available_size = available_size / (1024 ** 4)
     available_size = round(available_size, 2)
-
-
+    
     return available_size
 
     
