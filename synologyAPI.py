@@ -3,12 +3,18 @@
 
 # Synology API
 from synology_api import core_sys_info, surveillancestation
-# Python API / JSON creator | #UNUSED
-from flask import Flask, jsonify
-# PPrint | #UNUSED
-import pprint
-# JSON creator | #USUSED
-import json
+
+# Python API
+from fastapi import FastAPI
+
+# Pydantic (assists FastAPI)
+from pydantic import BaseModel
+
+# Time Alternative (assists FastAPI)
+import asyncio
+
+# Copy
+from copy import deepcopy
 
 
 
@@ -17,42 +23,43 @@ import json
 
 # Default JSON
 default_data = {
-    "camera_info": {
-        "active": 0,
-        "inactive": 0
-        },
-    "system_info": {
-        "cpu_usage": "0%",
-        "memory_usage": "0%",
-        "available_storage": "0 TB",
-        "ups_percentage": "N/A"
-        }
-    }
+    'system_info': {'cpu_usage': '0%', 'memory_usage': '0%', 'available_storage': '0 TB', 'ups_percentage': 'N/A'},
+    'camera_info': {'active': 1, 'inactive': 0},
+}
 
 # Credentials
 nasIp = '192.168.1.140'
 nasPort = '5001'
-username = 'username'
-password = 'password'
+username = 'remote_stats'
+password = '9Z8mpRzW'
 
 
 
 ####################
-# SYNOLOGY API CALLS
+# CLASSES
 
-# System Info API
-apiCall_1 = core_sys_info.SysInfo(nasIp, nasPort, username, password, secure=True, cert_verify=False, dsm_version=7, debug=True, otp_code=None)
-# SurveillanceStation API
-apiCall_2 = surveillancestation.SurveillanceStation(nasIp, nasPort, username, password, secure=True, cert_verify=False, dsm_version=7, debug=True, otp_code=None)
+class SystemInfo(BaseModel):
+    cpu_usage: str
+    memory_usage: str
+    available_storage: str
+    ups_percentage: str
 
+class CameraInfo(BaseModel):
+    active: int
+    inactive: int
+
+class JsonData(BaseModel):
+    system_info: SystemInfo
+    camera_info: CameraInfo
+    
 
 
 ####################
 # DATA MANAGEMENT / ORGANIZATION
 
 # Edit Default JSON function
-def insert_data(default_data, cpu, memory, storage, ups, active, inactive):
-    new_data = default_data
+def insert_data(ready_data, cpu, memory, storage, ups, active, inactive):
+    new_data = ready_data
     
     new_data["camera_info"]["active"] = active
     new_data["camera_info"]["inactive"] = inactive
@@ -64,22 +71,18 @@ def insert_data(default_data, cpu, memory, storage, ups, active, inactive):
 
     return new_data
     
-
 # Volume Availability Function
 def volume_availability(storage_info):
     
     total_size = storage_info['data']['vol_info'][0]['total_size']
     used_size = storage_info['data']['vol_info'][0]['used_size']
 
-    available_size = int(total_size) - int(used_size)
-    available_size = available_size / (1024 ** 4)
-    available_size = round(available_size, 2)
+    available_size = round((int(total_size) - int(used_size)) / (1024 ** 4), 2)
     
     return available_size
 
 # UPS Activity Function  
 #def ups_activity(ups_info):
-
 
 # Camera Activity Function
 def camera_activity(camera_info):
@@ -97,32 +100,63 @@ def camera_activity(camera_info):
     return [active, inactive]
 
 
-####################
-# API PULLS
 
-# CPU Usage (%)
-cpu_usage = (apiCall_1.get_cpu_utilization()['5min_load'])
-# Memory Usage (%)
-memory_usage = (apiCall_1.get_memory_utilization()['real_usage'])
-# Available Storage (TB)
-storage_available = (volume_availability(apiCall_1.get_volume_info()))
-# UPS Power (%)
-ups = 100
-# Active Camera Count
-camera_active = (camera_activity(apiCall_2.camera_list())[0])
-# Inactive Camera Count
-camera_inactive = (camera_activity(apiCall_2.camera_list())[1])
+####################
+# START API
+
+app = FastAPI()
 
 
 
 ####################
-# UPDATE JSON
+# DATA COLLECTION
 
-# Print Updated JSON | #FOR TEST PURPOSES
-print(insert_data(default_data, cpu_usage, memory_usage, storage_available, ups, camera_active, camera_inactive))
+# Auto Update API Data
+async def call_pull_update_data():
+    while True:
+        
+        # Copy Default Data
+        ready_data = deepcopy(default_data)
+
+        # Globalize updated_data for API
+        global updated_data
+
+        #Try / Except (Stops Synology API from breaking from a loss of connection)
+        try:
+            # Synology API Calls
+            apiCall_1 = core_sys_info.SysInfo(nasIp, nasPort, username, password, secure=True, cert_verify=False, dsm_version=7, debug=True, otp_code=None)
+            apiCall_2 = surveillancestation.SurveillanceStation(nasIp, nasPort, username, password, secure=True, cert_verify=False, dsm_version=7, debug=True, otp_code=None)
+
+            # Synology API Pulls
+            cpu_usage = apiCall_1.get_cpu_utilization()['5min_load']
+            memory_usage = apiCall_1.get_memory_utilization()['real_usage']
+            storage_available = volume_availability(apiCall_1.get_volume_info())
+            ups = 100  # NEED TO MAKE UPS STUFF
+            camera_active = camera_activity(apiCall_2.camera_list())[0]
+            camera_inactive = camera_activity(apiCall_2.camera_list())[1]
+
+            # Update Data
+            updated_data = insert_data(ready_data, cpu_usage, memory_usage, storage_available, ups, camera_active, camera_inactive)
+
+        except:
+            updated_data = ready_data
+
+        # API Wait
+        await asyncio.sleep(5) # Wait time (in seconds) between API data updates
 
 
 
+####################
+# UPDATE API
 
+# Startup Tasks
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(call_pull_update_data())
 
-
+# API Tasks
+@app.get("/data", response_model=JsonData)
+async def update_api():
+    # Convert updated_data into a Pydantic Model
+    api_data = JsonData(**updated_data)
+    return api_data
