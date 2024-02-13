@@ -26,10 +26,10 @@ default_data = {
 }
 
 # Credentials
-nasIp = '192.168.1.140'
-nasPort = '5001'
-username = 'remote_stats'
-password = '9Z8mpRzW'
+nasIp = 'IP ADDRESS'
+nasPort = 'PORT'
+username = 'USERNAME'
+password = 'PASSWORD'
 
 
 
