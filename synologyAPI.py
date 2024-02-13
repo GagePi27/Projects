@@ -21,8 +21,8 @@ from copy import deepcopy
 
 # Default JSON
 default_data = {
-    'system_info': {'cpu_usage': '0%', 'memory_usage': '0%', 'available_storage': '0 TB', 'ups_percentage': 'N/A'},
-    'camera_info': {'active': 1, 'inactive': 0},
+    'system_info': {'cpu_usage': 'N/A', 'memory_usage': 'N/A', 'available_storage': 'N/A', 'ups_percentage': 'N/A'},
+    'camera_info': {'active': 0, 'inactive': 0},
 }
 
 # Credentials
