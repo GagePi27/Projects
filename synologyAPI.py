@@ -126,7 +126,7 @@ async def call_pull_update_data():
             apiCall_2 = surveillancestation.SurveillanceStation(nasIp, nasPort, username, password, secure=True, cert_verify=False, dsm_version=7, debug=True, otp_code=None)
 
             # Synology API Pulls
-            cpu_usage = apiCall_1.get_cpu_utilization()['5min_load']
+            cpu_usage = str(int(apiCall_1.get_cpu_utilization()['5min_load']) / 10)
             memory_usage = apiCall_1.get_memory_utilization()['real_usage']
             storage_available = volume_availability(apiCall_1.get_volume_info())
             ups = 100  # NEED TO MAKE UPS STUFF
