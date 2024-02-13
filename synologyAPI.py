@@ -1,4 +1,11 @@
 ####################
+# HOW TO START
+
+# To manually start the program...
+# In a Command Line (Windows) move to the directory with this file and run the command uvicorn synologyAPI:app --reload
+
+
+####################
 # IMPORTS
 
 # Synology API (pip3 install git+https://github.com/N4S4/synology-api)  **must be from git repository for surveillancestation
