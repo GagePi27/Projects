@@ -1,19 +1,17 @@
 ####################
 # IMPORTS
 
-# Synology API
+# Synology API (pip3 install git+https://github.com/N4S4/synology-api)  **must be from git repository for surveillancestation
 from synology_api import core_sys_info, surveillancestation
 
-# Python API
+# Python FastAPI (pip3 insatll fastapi)
 from fastapi import FastAPI
-
-# Pydantic (assists FastAPI)
 from pydantic import BaseModel
 
-# Time Alternative (assists FastAPI)
+# Time Alternative  (Python 3.7+)
 import asyncio
 
-# Copy
+# Copy (Python 1.5.2+)
 from copy import deepcopy
 
 
