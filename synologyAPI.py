@@ -1,8 +1,9 @@
 ####################
-# HOW TO START
+# HOW TO LAUNCH PROGRAM
 
 # To manually start the program...
 # In a Command Line (Windows) move to the directory with this file and run the command uvicorn synologyAPI:app --reload
+
 
 
 ####################
