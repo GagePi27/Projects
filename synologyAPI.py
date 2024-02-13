@@ -6,7 +6,7 @@
 
 
 ####################
-# IMPORTS
+# IMPORTS / REQUIREMENTS
 
 # Synology API (pip3 install git+https://github.com/N4S4/synology-api)  **must be from git repository for surveillancestation
 from synology_api import core_sys_info, surveillancestation
@@ -20,6 +20,8 @@ import asyncio
 
 # Copy (Python 1.5.2+)
 from copy import deepcopy
+
+# Uvicorn (pip3 install uvicorn) **used to launch program
 
 
 
